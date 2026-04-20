@@ -1,0 +1,61 @@
+{% extends "layout.twig" %}
+
+{% block title %}Manage Offerings - {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Offerings for {{ business.name }}</h1>
+        <a href="/dashboard" class="text-gray-600 hover:text-primary">&larr; Back to Dashboard</a>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
+        <h2 class="text-xl font-bold mb-4">Add New Offering (Product/Service)</h2>
+        <form action="/businesses/{{ business_id }}/offerings" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+            <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold mb-2">Name</label>
+                    <input type="text" name="name" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">Price (₹)</label>
+                    <input type="number" name="price" step="0.01" class="w-full p-2 border rounded" required>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-2">Description</label>
+                <textarea name="description" class="w-full p-2 border rounded h-20"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-2">Image</label>
+                <input type="file" name="image" class="w-full">
+            </div>
+            <button type="submit" class="bg-primary text-white px-6 py-2 rounded font-bold hover:bg-red-700">Add Offering</button>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for item in offerings %}
+            <div class="bg-white p-4 rounded-lg shadow-sm border flex gap-4">
+                {% if item.image_path %}
+                    <img src="{{ item.image_path }}" class="w-24 h-24 object-cover rounded shadow-sm">
+                {% else %}
+                    <div class="w-24 h-24 bg-gray-100 rounded flex items-center justify-center text-gray-400">No Image</div>
+                {% endif %}
+                <div class="flex-1">
+                    <h4 class="font-bold text-lg">{{ item.name }}</h4>
+                    <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ item.description }}</p>
+                    <div class="text-primary font-bold">₹{{ item.price }}</div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-span-2 text-center py-12 bg-gray-50 border border-dashed rounded-lg text-gray-500">
+                No offerings added yet.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

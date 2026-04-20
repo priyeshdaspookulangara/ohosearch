@@ -9,6 +9,10 @@ use App\Controllers\CategoryController;
 use App\Controllers\BusinessController;
 use App\Controllers\UserController;
 use App\Controllers\PublicController;
+use App\Controllers\OfferingController;
+use App\Controllers\CouponController;
+use App\Controllers\InteractionController;
+use App\Controllers\PaymentController;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\AdminMiddleware;
 use Slim\Csrf\Guard;
@@ -115,6 +119,23 @@ $app->group('', function ($group) {
     $group->post('/businesses/{id:[0-9]+}/edit', [BusinessController::class, 'update']);
     $group->post('/businesses/{id:[0-9]+}/delete', [BusinessController::class, 'delete']);
 
+    // Offerings
+    $group->get('/businesses/{business_id:[0-9]+}/offerings', [OfferingController::class, 'index']);
+    $group->post('/businesses/{business_id:[0-9]+}/offerings', [OfferingController::class, 'store']);
+
+    // Coupons (Requester)
+    $group->post('/coupons/request', [CouponController::class, 'requestCoupon']);
+
+    // Interactions
+    $group->get('/enquiries', [InteractionController::class, 'listEnquiries']);
+    $group->post('/businesses/{id:[0-9]+}/review', [InteractionController::class, 'submitReview']);
+    $group->post('/businesses/{id:[0-9]+}/favorite', [InteractionController::class, 'toggleFavorite']);
+    $group->post('/businesses/{id:[0-9]+}/enquiry', [InteractionController::class, 'sendEnquiry']);
+    $group->post('/support/tickets', [InteractionController::class, 'raiseTicket']);
+
+    // Payments
+    $group->post('/payments/initiate', [PaymentController::class, 'initiatePayment']);
+
     // Admin only
     $group->group('', function ($adminGroup) {
         $adminGroup->get('/categories', [CategoryController::class, 'index']);
@@ -124,6 +145,10 @@ $app->group('', function ($group) {
         $adminGroup->get('/users', [UserController::class, 'index']);
         $adminGroup->post('/users', [UserController::class, 'store']);
         $adminGroup->post('/users/{id:[0-9]+}/delete', [UserController::class, 'delete']);
+
+        // Admin Coupons
+        $adminGroup->get('/admin/coupons/requests', [CouponController::class, 'listRequests']);
+        $adminGroup->post('/admin/coupons/requests/{id:[0-9]+}/approve', [CouponController::class, 'approveRequest']);
 
         $adminGroup->post('/businesses/{id:[0-9]+}/approve', function ($request, $response, $args) {
             $db = Database::getInstance();

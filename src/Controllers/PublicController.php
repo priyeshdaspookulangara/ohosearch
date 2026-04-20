@@ -97,6 +97,21 @@ class PublicController
         $stmt->execute([$args['id']]);
         $gallery = $stmt->fetchAll();
 
+        // Offerings
+        $stmt = $db->prepare("SELECT * FROM offerings WHERE business_id = ?");
+        $stmt->execute([$args['id']]);
+        $offerings = $stmt->fetchAll();
+
+        // Reviews
+        $stmt = $db->prepare("SELECT r.*, u.name as user_name FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.business_id = ? ORDER BY r.created_at DESC");
+        $stmt->execute([$args['id']]);
+        $reviews = $stmt->fetchAll();
+
+        // Average Rating
+        $stmt = $db->prepare("SELECT AVG(rating) as avg_rating, COUNT(*) as count FROM reviews WHERE business_id = ?");
+        $stmt->execute([$args['id']]);
+        $ratingStats = $stmt->fetch();
+
         // Reorder hours to start from Monday
         $daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         $orderedHours = [];
@@ -118,7 +133,10 @@ class PublicController
         return $view->render($response, 'public/business_profile.twig', [
             'business' => $business,
             'hours' => $orderedHours,
-            'gallery' => $gallery
+            'gallery' => $gallery,
+            'offerings' => $offerings,
+            'reviews' => $reviews,
+            'rating_stats' => $ratingStats
         ]);
     }
 }
