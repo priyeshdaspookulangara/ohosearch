@@ -7,6 +7,7 @@ use App\Database;
 use App\Controllers\AuthController;
 use App\Controllers\CategoryController;
 use App\Controllers\BusinessController;
+use App\Controllers\UserController;
 use App\Controllers\PublicController;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\AdminMiddleware;
@@ -25,22 +26,29 @@ $responseFactory = $app->getResponseFactory();
 
 // CSRF Protection
 $csrf = new Guard($responseFactory);
+$csrf->setPersistentTokenMode(true);
+$csrf->setFailureHandler(function ($request, $handler) {
+    $response = $handler->handle($request);
+    $response->getBody()->write('CSRF failure');
+    return $response->withStatus(400);
+});
 $app->add($csrf);
 
 // Twig
 $twig = Twig::create(__DIR__ . '/../views', ['cache' => false]);
 $app->add(TwigMiddleware::create($app, $twig));
 
-// Add CSRF to Twig
-$twig->getEnvironment()->addGlobal('csrf', [
-    'nameKey' => $csrf->getTokenNameKey(),
-    'valueKey' => $csrf->getTokenValueKey(),
-    'name' => $csrf->getTokenName(),
-    'value' => $csrf->getTokenValue(),
-]);
-
-// Add user to twig globals
-$twig->getEnvironment()->addGlobal('session', $_SESSION);
+// Middleware to inject CSRF and Session into Twig
+$app->add(function ($request, $handler) use ($twig, $csrf) {
+    $twig->getEnvironment()->addGlobal('csrf', [
+        'nameKey' => $csrf->getTokenNameKey(),
+        'valueKey' => $csrf->getTokenValueKey(),
+        'name' => $csrf->getTokenName(),
+        'value' => $csrf->getTokenValue(),
+    ]);
+    $twig->getEnvironment()->addGlobal('session', $_SESSION);
+    return $handler->handle($request);
+});
 
 // Public Routes
 $app->get('/', [PublicController::class, 'home']);
@@ -103,11 +111,19 @@ $app->group('', function ($group) {
 
     $group->get('/businesses/create', [BusinessController::class, 'create']);
     $group->post('/businesses/create', [BusinessController::class, 'store']);
+    $group->get('/businesses/{id:[0-9]+}/edit', [BusinessController::class, 'edit']);
+    $group->post('/businesses/{id:[0-9]+}/edit', [BusinessController::class, 'update']);
+    $group->post('/businesses/{id:[0-9]+}/delete', [BusinessController::class, 'delete']);
 
     // Admin only
     $group->group('', function ($adminGroup) {
         $adminGroup->get('/categories', [CategoryController::class, 'index']);
         $adminGroup->post('/categories', [CategoryController::class, 'store']);
+        $adminGroup->post('/categories/{id:[0-9]+}/delete', [CategoryController::class, 'delete']);
+
+        $adminGroup->get('/users', [UserController::class, 'index']);
+        $adminGroup->post('/users', [UserController::class, 'store']);
+        $adminGroup->post('/users/{id:[0-9]+}/delete', [UserController::class, 'delete']);
 
         $adminGroup->post('/businesses/{id:[0-9]+}/approve', function ($request, $response, $args) {
             $db = Database::getInstance();

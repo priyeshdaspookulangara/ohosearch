@@ -9,7 +9,8 @@
         <div class="flex gap-4">
             <a href="/businesses/create" class="bg-primary text-white px-4 py-2 rounded shadow hover:bg-red-700">Add New Listing</a>
             {% if session.user_role == 'admin' %}
-                <a href="/categories" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-900">Manage Categories</a>
+                <a href="/categories" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-900">Categories</a>
+                <a href="/users" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-900">Users</a>
             {% endif %}
         </div>
     </div>
@@ -90,6 +91,12 @@
                             </form>
                         {% endif %}
                         <a href="/businesses/{{ listing.id }}" class="text-primary hover:underline text-sm">View</a>
+                        <a href="/businesses/{{ listing.id }}/edit" class="text-blue-600 hover:underline text-sm">Edit</a>
+                        <form action="/businesses/{{ listing.id }}/delete" method="POST" onsubmit="return confirm('Are you sure?')">
+                            <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+                            <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+                            <button type="submit" class="text-red-600 hover:underline text-sm">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 {% else %}

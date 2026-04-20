@@ -36,4 +36,23 @@ class CategoryController
 
         return $response->withHeader('Location', '/categories')->withStatus(302);
     }
+
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        $id = $args['id'];
+        $db = Database::getInstance();
+
+        // Check if category is in use
+        $stmt = $db->prepare("SELECT COUNT(*) FROM businesses WHERE category_id = ?");
+        $stmt->execute([$id]);
+        if ($stmt->fetchColumn() > 0) {
+            // Cannot delete category in use
+            return $response->withHeader('Location', '/categories')->withStatus(302);
+        }
+
+        $stmt = $db->prepare("DELETE FROM categories WHERE id = ?");
+        $stmt->execute([$id]);
+
+        return $response->withHeader('Location', '/categories')->withStatus(302);
+    }
 }

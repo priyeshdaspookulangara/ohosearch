@@ -6,5 +6,8 @@
 !/uploads/hero/.gitkeep
 /uploads/gallery/*
 !/uploads/gallery/.gitkeep
-php_server.log
+*.log
 verification/
+output.txt
+test.txt
+home.html
