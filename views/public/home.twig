@@ -1,0 +1,44 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+<div class="bg-primary py-20">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-6">Find Local Businesses Near You</h1>
+        <form action="/search" method="GET" class="bg-white p-4 rounded-lg shadow-lg max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
+            <input type="text" name="q" placeholder="Keywords..." class="flex-1 p-3 border rounded">
+            <select name="category" class="flex-1 p-3 border rounded">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="lat" id="home-lat">
+            <input type="hidden" name="lng" id="home-lng">
+            <button type="submit" class="bg-primary text-white px-8 py-3 rounded font-bold hover:bg-red-700">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold mb-8 text-center">Browse Categories</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        {% for cat in categories %}
+        <a href="/search?category={{ cat.id }}" class="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition text-center group">
+            <div class="text-primary group-hover:scale-110 transition-transform mb-2">
+                <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+            </div>
+            <span class="font-semibold">{{ cat.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('home-lat').value = position.coords.latitude;
+            document.getElementById('home-lng').value = position.coords.longitude;
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "layout.twig" %}
+
+{% block title %}Manage Categories - Local Business Directory{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Manage Categories</h1>
+        <a href="/dashboard" class="text-gray-600 hover:text-primary">&larr; Back to Dashboard</a>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-sm border mb-8">
+        <h2 class="text-xl font-bold mb-4">Add New Category</h2>
+        <form action="/categories" method="POST" class="flex gap-4">
+            <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+            <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+
+            <input type="text" name="name" placeholder="Category Name (e.g. Restaurants)" class="flex-1 p-2 border rounded" required>
+            <button type="submit" class="bg-primary text-white px-6 py-2 rounded font-bold hover:bg-red-700">Add</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-100 text-gray-600 text-sm">
+                    <th class="p-4">Name</th>
+                    <th class="p-4">Slug</th>
+                    <th class="p-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr class="border-t">
+                    <td class="p-4 font-semibold">{{ category.name }}</td>
+                    <td class="p-4 text-gray-500">{{ category.slug }}</td>
+                    <td class="p-4">
+                        <span class="text-gray-400">Edit / Delete</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="p-8 text-center text-gray-500">No categories found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

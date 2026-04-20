@@ -1,0 +1,50 @@
+{% extends "layout.twig" %}
+
+{% block title %}Search Results - Local Business Directory{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 border-b py-8">
+    <div class="max-w-7xl mx-auto px-4">
+        <form action="/search" method="GET" class="flex flex-col md:flex-row gap-4">
+            <input type="text" name="q" value="{{ q }}" placeholder="Keywords..." class="flex-1 p-2 border rounded">
+            <select name="category" class="flex-1 p-2 border rounded">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {{ cat.id == category_id ? 'selected' : '' }}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-primary text-white px-6 py-2 rounded font-bold hover:bg-red-700">Update Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <h1 class="text-2xl font-bold mb-8">Search Results ({{ results|length }})</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for business in results %}
+        <div class="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition">
+            <a href="/businesses/{{ business.id }}">
+                <div class="h-48 bg-gray-200 bg-cover bg-center" style="background-image: url('{{ business.hero_image ?: 'https://via.placeholder.com/400x300?text=No+Image' }}')"></div>
+            </a>
+            <div class="p-6">
+                <div class="text-xs text-primary font-bold uppercase mb-1">{{ business.category_name }}</div>
+                <h3 class="text-xl font-bold mb-2 hover:text-primary"><a href="/businesses/{{ business.id }}">{{ business.name }}</a></h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ business.description }}</p>
+                <div class="flex items-center text-sm text-gray-500">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    {{ business.district }}, {{ business.state }}
+                    {% if business.distance is defined %}
+                        <span class="ml-auto font-semibold text-primary">{{ business.distance|number_format(1) }} km away</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-span-full py-20 text-center">
+            <h3 class="text-xl text-gray-500">No businesses found matching your criteria.</h3>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

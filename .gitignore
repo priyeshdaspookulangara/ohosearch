@@ -1,0 +1,10 @@
+/vendor/
+/node_modules/
+.env
+*.db
+/uploads/hero/*
+!/uploads/hero/.gitkeep
+/uploads/gallery/*
+!/uploads/gallery/.gitkeep
+php_server.log
+verification/

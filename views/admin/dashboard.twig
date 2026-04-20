@@ -1,0 +1,104 @@
+{% extends "layout.twig" %}
+
+{% block title %}Dashboard - Local Business Directory{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Dashboard</h1>
+        <div class="flex gap-4">
+            <a href="/businesses/create" class="bg-primary text-white px-4 py-2 rounded shadow hover:bg-red-700">Add New Listing</a>
+            {% if session.user_role == 'admin' %}
+                <a href="/categories" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-900">Manage Categories</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+            <h3 class="text-gray-500 uppercase text-sm font-semibold mb-2">Total Listings</h3>
+            <p class="text-3xl font-bold">{{ stats.total }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+            <h3 class="text-gray-500 uppercase text-sm font-semibold mb-2">Pending Approval</h3>
+            <p class="text-3xl font-bold text-yellow-600">{{ stats.pending }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+            <h3 class="text-gray-500 uppercase text-sm font-semibold mb-2">Categories</h3>
+            <p class="text-3xl font-bold">{{ stats.categories }}</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-lg shadow-sm border mb-6 flex flex-col md:flex-row gap-4 items-end">
+        <form action="/dashboard" method="GET" class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search</label>
+                <input type="text" name="q" value="{{ filters.q }}" placeholder="Name or address..." class="w-full p-2 border rounded text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+                <select name="status" class="w-full p-2 border rounded text-sm">
+                    <option value="">All Statuses</option>
+                    <option value="live" {{ filters.status == 'live' ? 'selected' : '' }}>Live</option>
+                    <option value="pending_approval" {{ filters.status == 'pending_approval' ? 'selected' : '' }}>Pending Approval</option>
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded text-sm font-bold hover:bg-gray-900 flex-1">Filter</button>
+                <a href="/dashboard" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-bold hover:bg-gray-300 text-center flex-1">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="p-4 border-b bg-gray-50">
+            <h2 class="font-bold">Recent Listings</h2>
+        </div>
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-100 text-gray-600 text-sm">
+                    <th class="p-4">Name</th>
+                    <th class="p-4">Category</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Created At</th>
+                    <th class="p-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for listing in listings %}
+                <tr class="border-t">
+                    <td class="p-4">
+                        <div class="font-bold">{{ listing.name }}</div>
+                        <div class="text-xs text-gray-500">{{ listing.address }}</div>
+                    </td>
+                    <td class="p-4 text-sm text-gray-600">{{ listing.category_name }}</td>
+                    <td class="p-4">
+                        {% if listing.status == 'live' %}
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Live</span>
+                        {% else %}
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4 text-sm text-gray-500">{{ listing.created_at }}</td>
+                    <td class="p-4 text-right flex justify-end gap-2">
+                        {% if session.user_role == 'admin' and listing.status == 'pending_approval' %}
+                            <form action="/businesses/{{ listing.id }}/approve" method="POST" class="inline">
+                                <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+                                <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+                                <button class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">Approve</button>
+                            </form>
+                        {% endif %}
+                        <a href="/businesses/{{ listing.id }}" class="text-primary hover:underline text-sm">View</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="p-8 text-center text-gray-500">No listings found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

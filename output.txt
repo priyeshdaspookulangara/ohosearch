@@ -1,0 +1,17 @@
+total 148
+-rw-rw-r--  1 jules jules   386 Apr 19 12:38 composer.json
+-rw-rw-r--  1 jules jules 47824 Apr 19 12:38 composer.lock
+drwxrwxr-x  2 jules jules  4096 Apr 19 12:40 config
+drwxrwxr-x  2 jules jules  4096 Apr 19 11:41 database
+-rw-rw-r--  1 jules jules  1936 Apr 19 12:35 database.sql
+-rw-rw-r--  1 jules jules  1660 Apr 19 12:38 database_sqlite.sql
+-rw-------  1 jules jules 40960 Apr 19 12:45 local_directory.db
+-rw-rw-r--  1 jules jules     0 Apr 19 13:34 output.txt
+-rw-rw-r--  1 jules jules  4758 Apr 19 13:14 php_server.log
+drwxrwxr-x  3 jules jules  4096 Apr 19 12:40 public
+-rw-rw-r--  1 jules jules   522 Apr 19 12:45 seed_users.php
+drwxrwxr-x  5 jules jules  4096 Apr 19 12:45 src
+-rw-rw-r--  1 jules jules     5 Apr 19 13:28 test.txt
+drwxrwxr-x  4 jules jules  4096 Apr 19 11:41 uploads
+drwxrwxr-x 12 jules jules  4096 Apr 19 12:38 vendor
+drwxrwxr-x  5 jules jules  4096 Apr 19 12:43 views

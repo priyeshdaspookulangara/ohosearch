@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Business Directory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        :root {
+            --primary-red: #e53e3e;
+        }
+        .bg-primary { background-color: var(--primary-red); }
+        .text-primary { color: var(--primary-red); }
+        .border-primary { border-color: var(--primary-red); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <a href="/" class="flex-shrink-0 flex items-center text-2xl font-bold text-primary">
+                        LocalBiz
+                    </a>
+                </div>
+                <div class="flex items-center">
+                                            <a href="/login" class="text-gray-700 hover:text-primary px-3 py-2">Login</a>
+                                    </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="bg-primary py-20">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-6">Find Local Businesses Near You</h1>
+        <form action="/search" method="GET" class="bg-white p-4 rounded-lg shadow-lg max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
+            <input type="text" name="q" placeholder="Keywords..." class="flex-1 p-3 border rounded">
+            <select name="category" class="flex-1 p-3 border rounded">
+                <option value="">All Categories</option>
+                                    <option value="1">Restaurants</option>
+                            </select>
+            <input type="hidden" name="lat" id="home-lat">
+            <input type="hidden" name="lng" id="home-lng">
+            <button type="submit" class="bg-primary text-white px-8 py-3 rounded font-bold hover:bg-red-700">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold mb-8 text-center">Browse Categories</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <a href="/search?category=1" class="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition text-center group">
+            <div class="text-primary group-hover:scale-110 transition-transform mb-2">
+                <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+            </div>
+            <span class="font-semibold">Restaurants</span>
+        </a>
+            </div>
+</div>
+
+<script>
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('home-lat').value = position.coords.latitude;
+            document.getElementById('home-lng').value = position.coords.longitude;
+        });
+    }
+</script>
+    </main>
+
+    <footer class="bg-white border-t mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-500">
+            &copy; 2026 Local Business Directory. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

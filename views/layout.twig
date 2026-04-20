@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Local Business Directory{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        :root {
+            --primary-red: #e53e3e;
+        }
+        .bg-primary { background-color: var(--primary-red); }
+        .text-primary { color: var(--primary-red); }
+        .border-primary { border-color: var(--primary-red); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <a href="/" class="flex-shrink-0 flex items-center text-2xl font-bold text-primary">
+                        LocalBiz
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    {% if session.user_id %}
+                        <a href="/dashboard" class="text-gray-700 hover:text-primary px-3 py-2">Dashboard</a>
+                        <a href="/logout" class="ml-4 bg-primary text-white px-4 py-2 rounded-md">Logout</a>
+                    {% else %}
+                        <a href="/login" class="text-gray-700 hover:text-primary px-3 py-2">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white border-t mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-500">
+            &copy; {{ "now"|date("Y") }} Local Business Directory. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>
