@@ -40,17 +40,12 @@ $app->add(TwigMiddleware::create($app, $twig));
 
 // Middleware to inject CSRF and Session into Twig
 $app->add(function ($request, $handler) use ($twig, $csrf) {
-    $nameKey = $csrf->getTokenNameKey();
-    $valueKey = $csrf->getTokenValueKey();
-    $name = $request->getAttribute($nameKey);
-    $value = $request->getAttribute($valueKey);
-
     $twig->getEnvironment()->addGlobal('session', $_SESSION);
     $twig->getEnvironment()->addGlobal('csrf', [
-        'nameKey'  => $nameKey,
-        'valueKey' => $valueKey,
-        'name'     => $name,
-        'value'    => $value
+        'nameKey'  => $csrf->getTokenNameKey(),
+        'valueKey' => $csrf->getTokenValueKey(),
+        'name'     => $csrf->getTokenName(),
+        'value'    => $csrf->getTokenValue()
     ]);
     return $handler->handle($request);
 });
@@ -75,7 +70,7 @@ $app->group('', function ($group) {
         $statusFilter = $params['status'] ?? '';
         $q = $params['q'] ?? '';
 
-        $query = "SELECT b.*, c.name as category_name FROM businesses b LEFT JOIN categories c ON b.category_id = c.id WHERE 1=1";
+        $query = "SELECT b.*, (SELECT name FROM categories c JOIN business_categories bc ON c.id = bc.category_id WHERE bc.business_id = b.id LIMIT 1) as category_name FROM businesses b WHERE 1=1";
         $whereArgs = [];
 
         if ($role !== 'admin') {

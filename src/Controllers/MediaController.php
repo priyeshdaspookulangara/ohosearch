@@ -39,23 +39,39 @@ class MediaController
         $id = $args['id'];
         $db = Database::getInstance();
 
+        $path = '';
         switch ($type) {
             case 'hero':
-                $stmt = $db->prepare("UPDATE businesses SET hero_image = NULL WHERE id = ?");
+                $stmt = $db->prepare("SELECT hero_image FROM businesses WHERE id = ?");
                 $stmt->execute([$id]);
+                $path = $stmt->fetchColumn();
+                $db->prepare("UPDATE businesses SET hero_image = NULL WHERE id = ?")->execute([$id]);
                 break;
             case 'gallery':
-                $stmt = $db->prepare("DELETE FROM business_gallery WHERE id = ?");
+                $stmt = $db->prepare("SELECT image_path FROM business_gallery WHERE id = ?");
                 $stmt->execute([$id]);
+                $path = $stmt->fetchColumn();
+                $db->prepare("DELETE FROM business_gallery WHERE id = ?")->execute([$id]);
                 break;
             case 'offering':
-                $stmt = $db->prepare("UPDATE offerings SET image_path = NULL WHERE id = ?");
+                $stmt = $db->prepare("SELECT image_path FROM offerings WHERE id = ?");
                 $stmt->execute([$id]);
+                $path = $stmt->fetchColumn();
+                $db->prepare("UPDATE offerings SET image_path = NULL WHERE id = ?")->execute([$id]);
                 break;
             case 'achievement':
-                $stmt = $db->prepare("UPDATE achievements SET image_path = NULL WHERE id = ?");
+                $stmt = $db->prepare("SELECT image_path FROM achievements WHERE id = ?");
                 $stmt->execute([$id]);
+                $path = $stmt->fetchColumn();
+                $db->prepare("UPDATE achievements SET image_path = NULL WHERE id = ?")->execute([$id]);
                 break;
+        }
+
+        if ($path) {
+            $fullPath = __DIR__ . '/../../public' . $path;
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
         }
 
         return $response->withHeader('Location', '/admin/media')->withStatus(302);

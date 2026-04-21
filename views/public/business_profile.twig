@@ -10,7 +10,18 @@
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                 <img src="{{ business.hero_image ?: 'https://via.placeholder.com/800x600?text=No+Image' }}" alt="{{ business.name }}" class="w-full h-64 object-cover">
                 <div class="p-6 space-y-4">
-                    <h1 class="text-2xl font-bold">{{ business.name }}</h1>
+                    <div class="flex justify-between items-start">
+                        <h1 class="text-2xl font-bold">{{ business.name }}</h1>
+                        {% if session.user_id %}
+                            <form action="/businesses/{{ business.id }}/favorite" method="POST">
+                                <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+                                <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+                                <button type="submit" class="text-gray-400 hover:text-red-500 transition">
+                                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
                     <div class="flex flex-wrap gap-2">
                         {% for cat in business_categories %}
                             <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-bold uppercase">{{ cat }}</span>
@@ -130,7 +141,7 @@
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full
                                         {% if item.type == 'award' %}bg-yellow-100 text-yellow-800
-                                        {% elif item.type == 'certification' %}bg-green-100 text-green-800
+                                        {% elseif item.type == 'certification' %}bg-green-100 text-green-800
                                         {% else %}bg-blue-100 text-blue-800{% endif %}">
                                         {{ item.type }}
                                     </span>

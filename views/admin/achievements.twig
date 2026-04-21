@@ -63,7 +63,7 @@
                     <div class="flex items-center gap-2 mb-1">
                         <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full
                             {% if item.type == 'award' %}bg-yellow-100 text-yellow-800
-                            {% elif item.type == 'certification' %}bg-green-100 text-green-800
+                            {% elseif item.type == 'certification' %}bg-green-100 text-green-800
                             {% else %}bg-blue-100 text-blue-800{% endif %}">
                             {{ item.type }}
                         </span>

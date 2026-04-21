@@ -29,7 +29,8 @@ class PublicController
 
         $db = Database::getInstance();
 
-        $query = "SELECT b.*, c.name as category_name";
+        // Select one primary category name for the listing view
+        $query = "SELECT b.*, (SELECT name FROM categories c JOIN business_categories bc ON c.id = bc.category_id WHERE bc.business_id = b.id LIMIT 1) as category_name";
         $args = [];
 
         if ($lat && $lng) {
@@ -40,7 +41,7 @@ class PublicController
             $args[] = $lat;
         }
 
-        $query .= " FROM businesses b LEFT JOIN categories c ON b.category_id = c.id WHERE b.status = 'live'";
+        $query .= " FROM businesses b WHERE b.status = 'live'";
 
         if ($keyword) {
             $query .= " AND (b.name LIKE ? OR b.description LIKE ?)";
@@ -79,7 +80,7 @@ class PublicController
     public function showBusiness(Request $request, Response $response, array $args): Response
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare("SELECT b.*, c.name as category_name FROM businesses b LEFT JOIN categories c ON b.category_id = c.id WHERE b.id = ?");
+        $stmt = $db->prepare("SELECT b.* FROM businesses b WHERE b.id = ?");
         $stmt->execute([$args['id']]);
         $business = $stmt->fetch();
 
