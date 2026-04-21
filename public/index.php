@@ -39,13 +39,18 @@ $app->add(TwigMiddleware::create($app, $twig));
 
 // Middleware to inject CSRF and Session into Twig
 $app->add(function ($request, $handler) use ($twig, $csrf) {
-    $twig->getEnvironment()->addGlobal('csrf', [
-        'nameKey' => $csrf->getTokenNameKey(),
-        'valueKey' => $csrf->getTokenValueKey(),
-        'name' => $csrf->getTokenName(),
-        'value' => $csrf->getTokenValue(),
-    ]);
+    $nameKey = $csrf->getTokenNameKey();
+    $valueKey = $csrf->getTokenValueKey();
+    $name = $request->getAttribute($nameKey);
+    $value = $request->getAttribute($valueKey);
+
     $twig->getEnvironment()->addGlobal('session', $_SESSION);
+    $twig->getEnvironment()->addGlobal('csrf', [
+        'nameKey'  => $nameKey,
+        'valueKey' => $valueKey,
+        'name'     => $name,
+        'value'    => $value
+    ]);
     return $handler->handle($request);
 });
 
