@@ -152,6 +152,9 @@
                                 <button class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">Approve</button>
                             </form>
                         {% endif %}
+                        {% if session.user_role == 'admin' %}
+                            <a href="/admin/businesses/{{ listing.id }}/reviews" class="text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 px-2 py-1 rounded hover:bg-yellow-100 font-bold">Reviews</a>
+                        {% endif %}
                         <a href="/businesses/{{ listing.id }}/offerings" class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded hover:bg-gray-200">Offerings</a>
                         <a href="/businesses/{{ listing.id }}" class="text-primary hover:underline text-sm">View</a>
                         <a href="/businesses/{{ listing.id }}/edit" class="text-blue-600 hover:underline text-sm">Edit</a>

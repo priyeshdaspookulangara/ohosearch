@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Database;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Views\Twig;
 
 class InteractionController
 {
@@ -111,5 +112,34 @@ class InteractionController
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 'admin/enquiries.twig', ['enquiries' => $enquiries]);
+    }
+
+    public function listBusinessReviews(Request $request, Response $response, array $args): Response
+    {
+        $businessId = $args['id'];
+        $db = Database::getInstance();
+
+        // Check if business exists
+        $stmt = $db->prepare("SELECT name FROM businesses WHERE id = ?");
+        $stmt->execute([$businessId]);
+        $businessName = $stmt->fetchColumn();
+
+        if (!$businessName) {
+            return $response->withStatus(404);
+        }
+
+        $stmt = $db->prepare("SELECT r.*, u.name as user_name FROM reviews r
+                              LEFT JOIN users u ON r.user_id = u.id
+                              WHERE r.business_id = ?
+                              ORDER BY r.created_at DESC");
+        $stmt->execute([$businessId]);
+        $reviews = $stmt->fetchAll();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 'admin/business_reviews.twig', [
+            'reviews' => $reviews,
+            'business_name' => $businessName,
+            'business_id' => $businessId
+        ]);
     }
 }

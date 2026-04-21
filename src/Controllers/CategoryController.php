@@ -42,8 +42,8 @@ class CategoryController
         $id = $args['id'];
         $db = Database::getInstance();
 
-        // Check if category is in use
-        $stmt = $db->prepare("SELECT COUNT(*) FROM businesses WHERE category_id = ?");
+        // Check if category is in use via many-to-many junction table
+        $stmt = $db->prepare("SELECT COUNT(*) FROM business_categories WHERE category_id = ?");
         $stmt->execute([$id]);
         if ($stmt->fetchColumn() > 0) {
             // Cannot delete category in use

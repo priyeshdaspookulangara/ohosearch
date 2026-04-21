@@ -152,6 +152,9 @@ $app->group('', function ($group) {
         $adminGroup->get('/admin/coupons/requests', [CouponController::class, 'listRequests']);
         $adminGroup->post('/admin/coupons/requests/{id:[0-9]+}/approve', [CouponController::class, 'approveRequest']);
 
+        // Review Management
+        $adminGroup->get('/admin/businesses/{id:[0-9]+}/reviews', [InteractionController::class, 'listBusinessReviews']);
+
         // Media Management
         $adminGroup->get('/admin/media', [MediaController::class, 'index']);
         $adminGroup->post('/admin/media/{type}/{id}/delete', [MediaController::class, 'delete']);
