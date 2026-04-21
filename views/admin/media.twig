@@ -1,0 +1,41 @@
+{% extends "layout.twig" %}
+
+{% block title %}Media Management - Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Media Management</h1>
+        <p class="text-gray-600">Review and manage all uploaded images.</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {% for item in media %}
+            <div class="bg-white rounded-lg shadow-sm border overflow-hidden group">
+                <div class="aspect-square bg-gray-100 flex items-center justify-center relative">
+                    <img src="{{ item.path }}" class="object-cover w-full h-full">
+                    <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <form action="/admin/media/{{ item.type }}/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Delete this image?')">
+                            <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+                            <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+                            <button type="submit" class="bg-red-600 text-white p-2 rounded-full hover:bg-red-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="p-2 text-center">
+                    <p class="text-xs font-bold text-gray-700 truncate" title="{{ item.name }}">{{ item.name }}</p>
+                    <p class="text-[10px] text-gray-500 uppercase">{{ item.type }}</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-span-full py-12 text-center text-gray-500">
+                No media found.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

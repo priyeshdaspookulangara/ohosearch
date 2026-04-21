@@ -17,7 +17,7 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
-    <nav class="bg-white shadow-sm border-b">
+    <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
@@ -27,8 +27,8 @@
                 </div>
                 <div class="flex items-center">
                     {% if session.user_id %}
-                        <a href="/dashboard" class="text-gray-700 hover:text-primary px-3 py-2">Dashboard</a>
-                        <a href="/logout" class="ml-4 bg-primary text-white px-4 py-2 rounded-md">Logout</a>
+                        <span class="text-gray-500 text-sm mr-4">Hi, {{ session.user_name }}</span>
+                        <a href="/logout" class="bg-primary text-white px-4 py-2 rounded-md text-sm font-bold">Logout</a>
                     {% else %}
                         <a href="/login" class="text-gray-700 hover:text-primary px-3 py-2">Login</a>
                     {% endif %}
@@ -37,9 +37,44 @@
         </div>
     </nav>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    <div class="flex min-h-screen">
+        {% if session.user_id %}
+            <!-- Sidebar -->
+            <aside class="w-64 bg-gray-900 text-white flex-shrink-0 hidden md:block">
+                <div class="p-6">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Menu</p>
+                    <nav class="space-y-1">
+                        <a href="/dashboard" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-800 transition">
+                            Dashboard
+                        </a>
+                        <a href="/enquiries" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-800 transition">
+                            Enquiries
+                        </a>
+
+                        {% if session.user_role == 'admin' %}
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-8 mb-4">Administration</p>
+                            <a href="/categories" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-800 transition">
+                                Categories
+                            </a>
+                            <a href="/users" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-800 transition">
+                                Users
+                            </a>
+                            <a href="/admin/coupons/requests" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-800 transition">
+                                Coupons
+                            </a>
+                            <a href="/admin/media" class="flex items-center px-4 py-3 text-sm font-medium rounded-lg hover:bg-gray-800 transition">
+                                Media Manager
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </aside>
+        {% endif %}
+
+        <main class="flex-1 bg-gray-50">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 
     <footer class="bg-white border-t mt-12 py-8">
         <div class="max-w-7xl mx-auto px-4 text-center text-gray-500">

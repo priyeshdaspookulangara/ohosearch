@@ -13,6 +13,7 @@ use App\Controllers\OfferingController;
 use App\Controllers\CouponController;
 use App\Controllers\InteractionController;
 use App\Controllers\PaymentController;
+use App\Controllers\MediaController;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\AdminMiddleware;
 use Slim\Csrf\Guard;
@@ -156,6 +157,10 @@ $app->group('', function ($group) {
         $adminGroup->get('/admin/coupons/requests', [CouponController::class, 'listRequests']);
         $adminGroup->post('/admin/coupons/requests/{id:[0-9]+}/approve', [CouponController::class, 'approveRequest']);
 
+        // Media Management
+        $adminGroup->get('/admin/media', [MediaController::class, 'index']);
+        $adminGroup->post('/admin/media/{type}/{id}/delete', [MediaController::class, 'delete']);
+
         $adminGroup->post('/businesses/{id:[0-9]+}/approve', function ($request, $response, $args) {
             $db = Database::getInstance();
             $stmt = $db->prepare("UPDATE businesses SET status = 'live' WHERE id = ?");
@@ -169,26 +174,6 @@ $app->group('', function ($group) {
 // This must come after specific /businesses/... routes
 $app->get('/businesses/{id:[0-9]+}', [PublicController::class, 'showBusiness']);
 
-// Static uploads with basic path sanitization
-$app->get('/uploads/{type}/{file}', function ($request, $response, $args) {
-    $type = preg_replace('/[^a-z0-9]/', '', $args['type']);
-    $file = preg_replace('/[^a-z0-9\._-]/i', '', $args['file']);
-
-    $path = __DIR__ . '/../uploads/' . $type . '/' . $file;
-    if (file_exists($path)) {
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $mimeType = match($extension) {
-            'jpg', 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-            'gif' => 'image/gif',
-            'webp' => 'image/webp',
-            default => 'application/octet-stream'
-        };
-        $response->getBody()->write(file_get_contents($path));
-        return $response->withHeader('Content-Type', $mimeType);
-    }
-    return $response->withStatus(404);
-});
 
 // Error handling
 $app->addErrorMiddleware(true, true, true);

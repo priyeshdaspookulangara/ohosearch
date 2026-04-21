@@ -8,12 +8,6 @@
         <h1 class="text-3xl font-bold">Dashboard</h1>
         <div class="flex gap-4">
             <a href="/businesses/create" class="bg-primary text-white px-4 py-2 rounded shadow hover:bg-red-700">Add New Listing</a>
-            <a href="/enquiries" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">Enquiries</a>
-            {% if session.user_role == 'admin' %}
-                <a href="/categories" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-900">Categories</a>
-                <a href="/users" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-900">Users</a>
-                <a href="/admin/coupons/requests" class="bg-gray-800 text-white px-4 py-2 rounded shadow hover:bg-gray-900">Coupons</a>
-            {% endif %}
         </div>
     </div>
 
