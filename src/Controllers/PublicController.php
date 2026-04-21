@@ -49,7 +49,7 @@ class PublicController
         }
 
         if ($categoryId) {
-            $query .= " AND b.category_id = ?";
+            $query .= " AND b.id IN (SELECT business_id FROM business_categories WHERE category_id = ?)";
             $args[] = $categoryId;
         }
 
@@ -107,6 +107,16 @@ class PublicController
         $stmt->execute([$args['id']]);
         $reviews = $stmt->fetchAll();
 
+        // Achievements
+        $stmt = $db->prepare("SELECT * FROM achievements WHERE business_id = ? ORDER BY date_awarded DESC");
+        $stmt->execute([$args['id']]);
+        $achievements = $stmt->fetchAll();
+
+        // Categories
+        $stmt = $db->prepare("SELECT c.name FROM categories c JOIN business_categories bc ON c.id = bc.category_id WHERE bc.business_id = ?");
+        $stmt->execute([$args['id']]);
+        $businessCategories = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
         // Average Rating
         $stmt = $db->prepare("SELECT AVG(rating) as avg_rating, COUNT(*) as count FROM reviews WHERE business_id = ?");
         $stmt->execute([$args['id']]);
@@ -136,7 +146,9 @@ class PublicController
             'gallery' => $gallery,
             'offerings' => $offerings,
             'reviews' => $reviews,
-            'rating_stats' => $ratingStats
+            'rating_stats' => $ratingStats,
+            'achievements' => $achievements,
+            'business_categories' => $businessCategories
         ]);
     }
 }

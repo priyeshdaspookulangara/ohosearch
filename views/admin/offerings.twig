@@ -29,9 +29,15 @@
                 <label class="block text-sm font-bold mb-2">Description</label>
                 <textarea name="description" class="w-full p-2 border rounded h-20"></textarea>
             </div>
-            <div>
-                <label class="block text-sm font-bold mb-2">Image</label>
-                <input type="file" name="image" class="w-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold mb-2">Image</label>
+                    <input type="file" name="image" class="w-full">
+                </div>
+                <div class="flex items-center gap-2 pt-6">
+                    <input type="checkbox" name="is_flagship" id="is_flagship" value="1" class="w-5 h-5">
+                    <label for="is_flagship" class="text-sm font-bold text-gray-700">Mark as Flagship Product</label>
+                </div>
             </div>
             <button type="submit" class="bg-primary text-white px-6 py-2 rounded font-bold hover:bg-red-700">Add Offering</button>
         </form>
@@ -46,9 +52,28 @@
                     <div class="w-24 h-24 bg-gray-100 rounded flex items-center justify-center text-gray-400">No Image</div>
                 {% endif %}
                 <div class="flex-1">
-                    <h4 class="font-bold text-lg">{{ item.name }}</h4>
+                    <div class="flex justify-between">
+                        <h4 class="font-bold text-lg">{{ item.name }}</h4>
+                        {% if item.is_flagship %}
+                            <span class="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border border-yellow-200">Flagship</span>
+                        {% endif %}
+                    </div>
                     <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ item.description }}</p>
                     <div class="text-primary font-bold">₹{{ item.price }}</div>
+                    <div class="mt-4 flex gap-2">
+                        {% if not item.is_flagship %}
+                            <form action="/businesses/{{ business_id }}/offerings/{{ item.id }}/flagship" method="POST">
+                                <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+                                <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+                                <button type="submit" class="text-[10px] bg-yellow-500 text-white px-2 py-1 rounded font-bold hover:bg-yellow-600 transition">Set Flagship</button>
+                            </form>
+                        {% endif %}
+                        <form action="/businesses/{{ business_id }}/offerings/{{ item.id }}/delete" method="POST" onsubmit="return confirm('Delete this offering?')">
+                            <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+                            <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+                            <button type="submit" class="text-[10px] bg-red-600 text-white px-2 py-1 rounded font-bold hover:bg-red-700 transition">Delete</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         {% else %}

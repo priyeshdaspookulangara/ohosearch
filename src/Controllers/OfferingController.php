@@ -50,14 +50,70 @@ class OfferingController
             $imagePath = $this->moveUploadedFile(__DIR__ . '/../../uploads/offerings', $files['image']);
         }
 
-        $stmt = $db->prepare("INSERT INTO offerings (business_id, name, description, price, image_path) VALUES (?, ?, ?, ?, ?)");
+        $isFlagship = isset($data['is_flagship']) ? 1 : 0;
+
+        if ($isFlagship) {
+            // Unset other flagships for this business
+            $db->prepare("UPDATE offerings SET is_flagship = 0 WHERE business_id = ?")->execute([$businessId]);
+        }
+
+        $stmt = $db->prepare("INSERT INTO offerings (business_id, name, description, price, image_path, is_flagship) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $businessId,
             $data['name'] ?? '',
             $data['description'] ?? '',
             $data['price'] ?? 0,
-            $imagePath
+            $imagePath,
+            $isFlagship
         ]);
+
+        return $response->withHeader('Location', "/businesses/$businessId/offerings")->withStatus(302);
+    }
+
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        $businessId = $args['business_id'];
+        $offeringId = $args['id'];
+        $db = Database::getInstance();
+
+        // Check ownership
+        $business = $db->prepare("SELECT user_id FROM businesses WHERE id = ?");
+        $business->execute([$businessId]);
+        $business = $business->fetch();
+        if (!$business || ($_SESSION['user_role'] !== 'admin' && $business['user_id'] != $_SESSION['user_id'])) {
+            return $response->withStatus(403);
+        }
+
+        $db->prepare("DELETE FROM offerings WHERE id = ? AND business_id = ?")->execute([$offeringId, $businessId]);
+
+        return $response->withHeader('Location', "/businesses/$businessId/offerings")->withStatus(302);
+    }
+
+    public function toggleFlagship(Request $request, Response $response, array $args): Response
+    {
+        $businessId = $args['business_id'];
+        $offeringId = $args['id'];
+        $db = Database::getInstance();
+
+        // Check ownership
+        $business = $db->prepare("SELECT user_id FROM businesses WHERE id = ?");
+        $business->execute([$businessId]);
+        $business = $business->fetch();
+        if (!$business || ($_SESSION['user_role'] !== 'admin' && $business['user_id'] != $_SESSION['user_id'])) {
+            return $response->withStatus(403);
+        }
+
+        $db->beginTransaction();
+        try {
+            // Unset all flagships for this business
+            $db->prepare("UPDATE offerings SET is_flagship = 0 WHERE business_id = ?")->execute([$businessId]);
+            // Set this one as flagship
+            $db->prepare("UPDATE offerings SET is_flagship = 1 WHERE id = ?")->execute([$offeringId]);
+            $db->commit();
+        } catch (\Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
 
         return $response->withHeader('Location', "/businesses/$businessId/offerings")->withStatus(302);
     }

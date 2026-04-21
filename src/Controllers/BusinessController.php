@@ -38,6 +38,11 @@ class BusinessController
 
         $categories = $db->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();
 
+        // Get selected categories
+        $stmt = $db->prepare("SELECT category_id FROM business_categories WHERE business_id = ?");
+        $stmt->execute([$id]);
+        $selectedCategories = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
         $hours = $db->prepare("SELECT * FROM working_hours WHERE business_id = ?");
         $hours->execute([$id]);
         $hours = $hours->fetchAll();
@@ -51,7 +56,8 @@ class BusinessController
         return $view->render($response, 'admin/business_form.twig', [
             'categories' => $categories,
             'business' => $business,
-            'hours' => $formattedHours
+            'hours' => $formattedHours,
+            'selected_categories' => $selectedCategories
         ]);
     }
 
@@ -80,7 +86,7 @@ class BusinessController
             $hero_image = $this->moveUploadedFile(__DIR__ . '/../../uploads/hero', $uploadedFile);
         }
 
-        $stmt = $db->prepare("UPDATE businesses SET name=?, description=?, address=?, district=?, state=?, pin=?, phone=?, email=?, whatsapp=?, latitude=?, longitude=?, category_id=?, hero_image=?, youtube_video_id=? WHERE id=?");
+        $stmt = $db->prepare("UPDATE businesses SET name=?, description=?, address=?, district=?, state=?, pin=?, phone=?, email=?, whatsapp=?, latitude=?, longitude=?, hero_image=?, youtube_video_id=? WHERE id=?");
         $stmt->execute([
             $data['name'] ?? '',
             $data['description'] ?? '',
@@ -93,11 +99,19 @@ class BusinessController
             $data['whatsapp'] ?? '',
             $data['latitude'] ?? 0,
             $data['longitude'] ?? 0,
-            $data['category_id'] ?? null,
             $hero_image,
             $data['youtube_video_id'] ?? '',
             $id
         ]);
+
+        // Update Categories
+        $db->prepare("DELETE FROM business_categories WHERE business_id = ?")->execute([$id]);
+        if (!empty($data['category_ids'])) {
+            $stmtCat = $db->prepare("INSERT INTO business_categories (business_id, category_id) VALUES (?, ?)");
+            foreach ($data['category_ids'] as $catId) {
+                $stmtCat->execute([$id, $catId]);
+            }
+        }
 
         // Update Working Hours
         if (isset($data['hours'])) {
@@ -149,7 +163,7 @@ class BusinessController
         // Validation
         $errors = [];
         if (empty($data['name'])) $errors[] = "Name is required";
-        if (empty($data['category_id'])) $errors[] = "Category is required";
+        if (empty($data['category_ids'])) $errors[] = "At least one category is required";
         if (empty($data['latitude']) || empty($data['longitude'])) $errors[] = "Location on map is required";
 
         if (!empty($errors)) {
@@ -170,7 +184,7 @@ class BusinessController
 
         $status = ($_SESSION['user_role'] === 'admin') ? 'live' : 'pending_approval';
 
-        $stmt = $db->prepare("INSERT INTO businesses (name, description, address, district, state, pin, phone, email, whatsapp, latitude, longitude, category_id, user_id, status, hero_image, youtube_video_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $db->prepare("INSERT INTO businesses (name, description, address, district, state, pin, phone, email, whatsapp, latitude, longitude, user_id, status, hero_image, youtube_video_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         $stmt->execute([
             $data['name'] ?? '',
@@ -184,7 +198,6 @@ class BusinessController
             $data['whatsapp'] ?? '',
             $data['latitude'] ?? 0,
             $data['longitude'] ?? 0,
-            $data['category_id'] ?? null,
             $_SESSION['user_id'],
             $status,
             $hero_image,
@@ -192,6 +205,14 @@ class BusinessController
         ]);
 
         $businessId = $db->lastInsertId();
+
+        // Save Categories
+        if (!empty($data['category_ids'])) {
+            $stmtCat = $db->prepare("INSERT INTO business_categories (business_id, category_id) VALUES (?, ?)");
+            foreach ($data['category_ids'] as $catId) {
+                $stmtCat->execute([$businessId, $catId]);
+            }
+        }
 
         // Gallery
         if (isset($files['gallery'])) {
@@ -220,6 +241,47 @@ class BusinessController
         }
 
         return $response->withHeader('Location', '/dashboard')->withStatus(302);
+    }
+
+    public function achievements(Request $request, Response $response, array $args): Response
+    {
+        $id = $args['id'];
+        $db = Database::getInstance();
+        $achievements = $db->prepare("SELECT * FROM achievements WHERE business_id = ?");
+        $achievements->execute([$id]);
+        $achievements = $achievements->fetchAll();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 'admin/achievements.twig', [
+            'achievements' => $achievements,
+            'business_id' => $id
+        ]);
+    }
+
+    public function storeAchievement(Request $request, Response $response, array $args): Response
+    {
+        $id = $args['id'];
+        $data = $request->getParsedBody();
+        $files = $request->getUploadedFiles();
+        $db = Database::getInstance();
+
+        $imagePath = '';
+        if (isset($files['image']) && $files['image']->getError() === UPLOAD_ERR_OK) {
+            $imagePath = $this->moveUploadedFile(__DIR__ . '/../../uploads/achievements', $files['image']);
+        }
+
+        $stmt = $db->prepare("INSERT INTO achievements (business_id, title, description, issuer, date_awarded, type, image_path) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $id,
+            $data['title'],
+            $data['description'] ?? '',
+            $data['issuer'] ?? '',
+            $data['date_awarded'] ?? null,
+            $data['type'] ?? 'achievement',
+            $imagePath
+        ]);
+
+        return $response->withHeader('Location', "/businesses/$id/achievements")->withStatus(302);
     }
 
     private function moveUploadedFile($directory, $uploadedFile)

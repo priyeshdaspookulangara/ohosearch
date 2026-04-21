@@ -12,11 +12,12 @@ erDiagram
     USERS ||--o{ SUPPORT_TICKETS : raises
     USERS ||--o{ NOTIFICATIONS : receives
 
-    CATEGORIES ||--o{ BUSINESSES : categorizes
+    CATEGORIES }o--o{ BUSINESSES : categorized-in
     CATEGORIES ||--o{ CATEGORIES : parent-child
 
     BUSINESSES ||--o{ WORKING_HOURS : has
     BUSINESSES ||--o{ BUSINESS_GALLERY : has
+    BUSINESSES ||--o{ ACHIEVEMENTS : showcases
     BUSINESSES ||--o{ OFFERINGS : provides
     BUSINESSES ||--o{ REVIEWS : receives
     BUSINESSES ||--o{ FAVORITES : bookmarked-in

@@ -28,15 +28,22 @@ CREATE TABLE IF NOT EXISTS businesses (
     whatsapp TEXT,
     latitude REAL,
     longitude REAL,
-    category_id INTEGER,
     user_id INTEGER,
     status TEXT DEFAULT 'pending_approval',
     hero_image TEXT,
     youtube_video_id TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Many-to-Many Categories
+CREATE TABLE IF NOT EXISTS business_categories (
+    business_id INTEGER,
+    category_id INTEGER,
+    PRIMARY KEY (business_id, category_id),
+    FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS working_hours (
@@ -64,6 +71,21 @@ CREATE TABLE IF NOT EXISTS offerings (
     description TEXT,
     price REAL,
     image_path TEXT,
+    is_flagship BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
+);
+
+-- Achievements, Awards, Certifications
+CREATE TABLE IF NOT EXISTS achievements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    business_id INTEGER,
+    title TEXT NOT NULL,
+    description TEXT,
+    issuer TEXT,
+    date_awarded DATE,
+    image_path TEXT,
+    type TEXT, -- 'award', 'certification', 'achievement'
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
 );

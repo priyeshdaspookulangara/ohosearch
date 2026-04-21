@@ -11,7 +11,11 @@
                 <img src="{{ business.hero_image ?: 'https://via.placeholder.com/800x600?text=No+Image' }}" alt="{{ business.name }}" class="w-full h-64 object-cover">
                 <div class="p-6 space-y-4">
                     <h1 class="text-2xl font-bold">{{ business.name }}</h1>
-                    <div class="text-sm text-primary font-bold uppercase">{{ business.category_name }}</div>
+                    <div class="flex flex-wrap gap-2">
+                        {% for cat in business_categories %}
+                            <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-bold uppercase">{{ cat }}</span>
+                        {% endfor %}
+                    </div>
 
                     <div class="grid grid-cols-1 gap-3 pt-4">
                         <a href="tel:{{ business.phone }}" class="flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">
@@ -64,20 +68,76 @@
                 </div>
             </div>
 
+            <!-- Flagship Product Highlight -->
+            {% set flagship = null %}
+            {% for item in offerings %}{% if item.is_flagship %}{% set flagship = item %}{% endif %}{% endfor %}
+
+            {% if flagship %}
+                <div class="bg-gradient-to-r from-primary to-red-800 p-8 rounded-xl shadow-lg border text-white relative overflow-hidden">
+                    <div class="absolute top-4 right-4 bg-yellow-400 text-red-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Flagship Product</div>
+                    <div class="flex gap-6 items-center">
+                        {% if flagship.image_path %}
+                            <img src="{{ flagship.image_path }}" class="w-32 h-32 object-cover rounded-lg border-2 border-white shadow-md">
+                        {% endif %}
+                        <div>
+                            <h3 class="text-2xl font-black mb-1">{{ flagship.name }}</h3>
+                            <p class="text-red-100 text-sm mb-4 leading-relaxed">{{ flagship.description }}</p>
+                            <div class="text-3xl font-bold">₹{{ flagship.price }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
             <!-- Offerings -->
             {% if offerings %}
             <div class="bg-white p-8 rounded-xl shadow-sm border">
-                <h2 class="text-xl font-bold mb-6">Our Offerings</h2>
+                <h2 class="text-xl font-bold mb-6">Products & Services</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {% for item in offerings %}
-                        <div class="border rounded-lg p-4 flex gap-4">
+                        <div class="border rounded-lg p-4 flex gap-4 {% if item.is_flagship %}bg-yellow-50 border-yellow-200{% endif %}">
                             {% if item.image_path %}
                                 <img src="{{ item.image_path }}" class="w-20 h-20 object-cover rounded shadow-sm">
                             {% endif %}
                             <div>
-                                <h4 class="font-bold text-gray-900">{{ item.name }}</h4>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-gray-900">{{ item.name }}</h4>
+                                    {% if item.is_flagship %}<span class="text-[8px] bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded font-bold uppercase">Flagship</span>{% endif %}
+                                </div>
                                 <p class="text-xs text-gray-500 line-clamp-2">{{ item.description }}</p>
                                 <div class="mt-2 text-primary font-bold">₹{{ item.price }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Achievements -->
+            {% if achievements %}
+            <div class="bg-white p-8 rounded-xl shadow-sm border">
+                <h2 class="text-xl font-bold mb-6">Achievements & Certifications</h2>
+                <div class="space-y-4">
+                    {% for item in achievements %}
+                        <div class="flex gap-4 items-start p-4 bg-gray-50 rounded-lg border">
+                            {% if item.image_path %}
+                                <img src="{{ item.image_path }}" class="w-16 h-16 object-contain bg-white border rounded">
+                            {% else %}
+                                <div class="w-16 h-16 flex items-center justify-center bg-white border rounded text-gray-300">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full
+                                        {% if item.type == 'award' %}bg-yellow-100 text-yellow-800
+                                        {% elif item.type == 'certification' %}bg-green-100 text-green-800
+                                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                        {{ item.type }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-400">{{ item.date_awarded|date("Y") }}</span>
+                                </div>
+                                <h4 class="font-bold text-gray-900">{{ item.title }}</h4>
+                                <p class="text-xs text-primary font-medium">{{ item.issuer }}</p>
                             </div>
                         </div>
                     {% endfor %}

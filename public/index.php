@@ -31,11 +31,6 @@ $responseFactory = $app->getResponseFactory();
 // CSRF Protection
 $csrf = new Guard($responseFactory);
 $csrf->setPersistentTokenMode(true);
-$csrf->setFailureHandler(function ($request, $handler) {
-    $response = $handler->handle($request);
-    $response->getBody()->write('CSRF failure');
-    return $response->withStatus(400);
-});
 $app->add($csrf);
 
 // Twig
@@ -119,9 +114,15 @@ $app->group('', function ($group) {
     $group->post('/businesses/{id:[0-9]+}/edit', [BusinessController::class, 'update']);
     $group->post('/businesses/{id:[0-9]+}/delete', [BusinessController::class, 'delete']);
 
+    // Achievements
+    $group->get('/businesses/{id:[0-9]+}/achievements', [BusinessController::class, 'achievements']);
+    $group->post('/businesses/{id:[0-9]+}/achievements', [BusinessController::class, 'storeAchievement']);
+
     // Offerings
     $group->get('/businesses/{business_id:[0-9]+}/offerings', [OfferingController::class, 'index']);
     $group->post('/businesses/{business_id:[0-9]+}/offerings', [OfferingController::class, 'store']);
+    $group->post('/businesses/{business_id:[0-9]+}/offerings/{id:[0-9]+}/delete', [OfferingController::class, 'delete']);
+    $group->post('/businesses/{business_id:[0-9]+}/offerings/{id:[0-9]+}/flagship', [OfferingController::class, 'toggleFlagship']);
 
     // Coupons (Requester)
     $group->post('/coupons/request', [CouponController::class, 'requestCoupon']);
