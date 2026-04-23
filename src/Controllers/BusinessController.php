@@ -346,6 +346,40 @@ class BusinessController
         return $response->withHeader('Location', '/admin/claims')->withStatus(302);
     }
 
+    public function transferOwnership(Request $request, Response $response, array $args): Response
+    {
+        $id = $args['id'];
+        $data = $request->getParsedBody();
+        $db = Database::getInstance();
+
+        $business = $db->prepare("SELECT * FROM businesses WHERE id = ?");
+        $business->execute([$id]);
+        $business = $business->fetch();
+
+        if (!$business) {
+            return $response->withStatus(404);
+        }
+
+        if ($_SESSION['user_role'] !== 'admin' && $business['user_id'] != $_SESSION['user_id']) {
+            return $response->withStatus(403);
+        }
+
+        $newOwnerEmail = $data['email'] ?? '';
+        $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$newOwnerEmail]);
+        $newOwnerId = $stmt->fetchColumn();
+
+        if (!$newOwnerId) {
+            // In a real app, we might invite them. Here we just error.
+            return $response->withHeader('Location', "/businesses/$id/edit?error=user_not_found")->withStatus(302);
+        }
+
+        $stmt = $db->prepare("UPDATE businesses SET user_id = ? WHERE id = ?");
+        $stmt->execute([$newOwnerId, $id]);
+
+        return $response->withHeader('Location', '/dashboard')->withStatus(302);
+    }
+
     private function moveUploadedFile($directory, $uploadedFile)
     {
         $extension = strtolower(pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION));

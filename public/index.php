@@ -132,6 +132,7 @@ $app->group('', function ($group) {
     $group->post('/businesses/{id:[0-9]+}/edit', [BusinessController::class, 'update']);
     $group->post('/businesses/{id:[0-9]+}/delete', [BusinessController::class, 'delete']);
     $group->post('/businesses/{id:[0-9]+}/claim', [BusinessController::class, 'submitClaim']);
+    $group->post('/businesses/{id:[0-9]+}/transfer', [BusinessController::class, 'transferOwnership']);
 
     // Achievements
     $group->get('/businesses/{id:[0-9]+}/achievements', [BusinessController::class, 'achievements']);
