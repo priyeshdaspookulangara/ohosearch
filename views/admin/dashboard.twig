@@ -77,20 +77,30 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div class="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 class="text-gray-500 uppercase text-sm font-semibold mb-2">Total Listings</h3>
-            <p class="text-3xl font-bold">{{ stats.total }}</p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 class="text-gray-500 uppercase text-sm font-semibold mb-2">Pending Approval</h3>
-            <p class="text-3xl font-bold text-yellow-600">{{ stats.pending }}</p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 class="text-gray-500 uppercase text-sm font-semibold mb-2">Categories</h3>
-            <p class="text-3xl font-bold">{{ stats.categories }}</p>
+    {% if renewals %}
+    <div class="mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-primary">🔔</span> Upcoming Renewals
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for renewal in renewals %}
+            <div class="bg-orange-50 border border-orange-200 p-4 rounded-lg flex justify-between items-center">
+                <div>
+                    <h4 class="font-bold text-orange-900">{{ renewal.business_name }}</h4>
+                    <p class="text-xs text-orange-700">Expires: {{ renewal.end_date|date("d M Y") }}</p>
+                </div>
+                <form action="/payments/initiate" method="POST">
+                    <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+                    <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+                    <input type="hidden" name="business_id" value="{{ renewal.business_id }}">
+                    <button type="submit" class="text-xs bg-orange-600 text-white px-3 py-1.5 rounded font-bold hover:bg-orange-700">Renew Now</button>
+                </form>
+            </div>
+            {% endfor %}
         </div>
     </div>
+    {% endif %}
+
 
     <!-- Filters -->
     <div class="bg-white p-4 rounded-lg shadow-sm border mb-6 flex flex-col md:flex-row gap-4 items-end">

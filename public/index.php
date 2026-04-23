@@ -108,10 +108,20 @@ $app->group('', function ($group) {
             'categories' => $db->query("SELECT COUNT(*) FROM categories")->fetchColumn(),
         ];
 
+        // Upcoming Renewals (Featured listings expiring in next 30 days)
+        $renewalQuery = "SELECT fl.*, b.name as business_name FROM featured_listings fl
+                         JOIN businesses b ON fl.business_id = b.id
+                         WHERE fl.end_date BETWEEN date('now') AND date('now', '+30 days')";
+        if ($role !== 'admin') {
+            $renewalQuery .= " AND b.user_id = " . (int)$userId;
+        }
+        $renewals = $db->query($renewalQuery)->fetchAll();
+
         $view = Twig::fromRequest($request);
         return $view->render($response, 'admin/dashboard.twig', [
             'listings' => $listings,
             'stats' => $stats,
+            'renewals' => $renewals,
             'filters' => ['status' => $statusFilter, 'q' => $q]
         ]);
     });
