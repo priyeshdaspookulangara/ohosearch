@@ -32,23 +32,30 @@ $responseFactory = $app->getResponseFactory();
 // CSRF Protection
 $csrf = new Guard($responseFactory);
 $csrf->setPersistentTokenMode(true);
-$app->add($csrf);
 
 // Twig
 $twig = Twig::create(__DIR__ . '/../views', ['cache' => false]);
-$app->add(TwigMiddleware::create($app, $twig));
 
 // Middleware to inject CSRF and Session into Twig
 $app->add(function ($request, $handler) use ($twig, $csrf) {
+    // Generate new tokens if they don't exist
+    $nameKey = $csrf->getTokenNameKey();
+    $valueKey = $csrf->getTokenValueKey();
+    $name = $csrf->getTokenName();
+    $value = $csrf->getTokenValue();
+
     $twig->getEnvironment()->addGlobal('session', $_SESSION);
     $twig->getEnvironment()->addGlobal('csrf', [
-        'nameKey'  => $csrf->getTokenNameKey(),
-        'valueKey' => $csrf->getTokenValueKey(),
-        'name'     => $csrf->getTokenName(),
-        'value'    => $csrf->getTokenValue()
+        'nameKey'  => $nameKey,
+        'valueKey' => $valueKey,
+        'name'     => $name,
+        'value'    => $value
     ]);
     return $handler->handle($request);
 });
+
+$app->add(TwigMiddleware::create($app, $twig));
+$app->add($csrf);
 
 // Public Routes
 $app->get('/', [PublicController::class, 'home']);
@@ -114,6 +121,7 @@ $app->group('', function ($group) {
     $group->get('/businesses/{id:[0-9]+}/edit', [BusinessController::class, 'edit']);
     $group->post('/businesses/{id:[0-9]+}/edit', [BusinessController::class, 'update']);
     $group->post('/businesses/{id:[0-9]+}/delete', [BusinessController::class, 'delete']);
+    $group->post('/businesses/{id:[0-9]+}/claim', [BusinessController::class, 'submitClaim']);
 
     // Achievements
     $group->get('/businesses/{id:[0-9]+}/achievements', [BusinessController::class, 'achievements']);
@@ -133,6 +141,7 @@ $app->group('', function ($group) {
     $group->post('/businesses/{id:[0-9]+}/review', [InteractionController::class, 'submitReview']);
     $group->post('/businesses/{id:[0-9]+}/favorite', [InteractionController::class, 'toggleFavorite']);
     $group->post('/businesses/{id:[0-9]+}/enquiry', [InteractionController::class, 'sendEnquiry']);
+    $group->post('/reviews/{id:[0-9]+}/reply', [InteractionController::class, 'replyToReview']);
     $group->post('/support/tickets', [InteractionController::class, 'raiseTicket']);
 
     // Payments
@@ -151,6 +160,10 @@ $app->group('', function ($group) {
         // Admin Coupons
         $adminGroup->get('/admin/coupons/requests', [CouponController::class, 'listRequests']);
         $adminGroup->post('/admin/coupons/requests/{id:[0-9]+}/approve', [CouponController::class, 'approveRequest']);
+
+        // Claims
+        $adminGroup->get('/admin/claims', [BusinessController::class, 'listClaimRequests']);
+        $adminGroup->post('/admin/claims/{id:[0-9]+}/approve', [BusinessController::class, 'approveClaim']);
 
         // Review Management
         $adminGroup->get('/admin/businesses/{id:[0-9]+}/reviews', [InteractionController::class, 'listBusinessReviews']);

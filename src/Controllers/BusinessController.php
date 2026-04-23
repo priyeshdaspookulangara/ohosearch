@@ -284,9 +284,77 @@ class BusinessController
         return $response->withHeader('Location', "/businesses/$id/achievements")->withStatus(302);
     }
 
+    public function submitClaim(Request $request, Response $response, array $args): Response
+    {
+        $businessId = $args['id'];
+        $userId = $_SESSION['user_id'];
+        $data = $request->getParsedBody();
+        $db = Database::getInstance();
+
+        // Check if already owner
+        $stmt = $db->prepare("SELECT user_id FROM businesses WHERE id = ?");
+        $stmt->execute([$businessId]);
+        if ($stmt->fetchColumn() == $userId) {
+            return $response->withHeader('Location', "/businesses/$businessId")->withStatus(302);
+        }
+
+        $stmt = $db->prepare("INSERT INTO claim_requests (business_id, user_id, notes) VALUES (?, ?, ?)");
+        $stmt->execute([$businessId, $userId, $data['notes'] ?? '']);
+
+        return $response->withHeader('Location', "/businesses/$businessId?claimed=1")->withStatus(302);
+    }
+
+    public function listClaimRequests(Request $request, Response $response): Response
+    {
+        $db = Database::getInstance();
+        $claims = $db->query("SELECT cr.*, b.name as business_name, u.name as user_name FROM claim_requests cr
+                              JOIN businesses b ON cr.business_id = b.id
+                              JOIN users u ON cr.user_id = u.id
+                              WHERE cr.status = 'pending'
+                              ORDER BY cr.created_at DESC")->fetchAll();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 'admin/claim_requests.twig', ['claims' => $claims]);
+    }
+
+    public function approveClaim(Request $request, Response $response, array $args): Response
+    {
+        $id = $args['id'];
+        $db = Database::getInstance();
+
+        $db->beginTransaction();
+        try {
+            $stmt = $db->prepare("SELECT business_id, user_id FROM claim_requests WHERE id = ?");
+            $stmt->execute([$id]);
+            $claim = $stmt->fetch();
+
+            if ($claim) {
+                // Update business owner
+                $stmt = $db->prepare("UPDATE businesses SET user_id = ? WHERE id = ?");
+                $stmt->execute([$claim['user_id'], $claim['business_id']]);
+
+                // Update claim status
+                $stmt = $db->prepare("UPDATE claim_requests SET status = 'approved' WHERE id = ?");
+                $stmt->execute([$id]);
+            }
+            $db->commit();
+        } catch (\Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
+
+        return $response->withHeader('Location', '/admin/claims')->withStatus(302);
+    }
+
     private function moveUploadedFile($directory, $uploadedFile)
     {
-        $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+        $extension = strtolower(pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+        if (!in_array($extension, $allowed)) {
+            throw new \Exception("Invalid file extension. Only images (jpg, png, webp, gif) are allowed.");
+        }
+
         $basename = bin2hex(random_bytes(8));
         $filename = sprintf('%s.%0.8s', $basename, $extension);
 

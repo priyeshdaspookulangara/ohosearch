@@ -44,7 +44,8 @@ class InteractionController
                ->execute([$userId, $businessId, $offeringId]);
         }
 
-        return $response->withHeader('Content-Type', 'application/json');
+        $referer = $request->getHeaderLine('Referer') ?: "/businesses/$businessId";
+        return $response->withHeader('Location', $referer)->withStatus(302);
     }
 
     public function sendEnquiry(Request $request, Response $response, array $args): Response
@@ -112,6 +113,27 @@ class InteractionController
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 'admin/enquiries.twig', ['enquiries' => $enquiries]);
+    }
+
+    public function replyToReview(Request $request, Response $response, array $args): Response
+    {
+        $reviewId = $args['id'];
+        $data = $request->getParsedBody();
+        $db = Database::getInstance();
+
+        // Verify ownership
+        $stmt = $db->prepare("SELECT b.user_id, b.id as business_id FROM reviews r JOIN businesses b ON r.business_id = b.id WHERE r.id = ?");
+        $stmt->execute([$reviewId]);
+        $info = $stmt->fetch();
+
+        if (!$info || ($info['user_id'] != $_SESSION['user_id'] && $_SESSION['user_role'] !== 'admin')) {
+            return $response->withStatus(403);
+        }
+
+        $stmt = $db->prepare("UPDATE reviews SET reply = ? WHERE id = ?");
+        $stmt->execute([$data['reply'], $reviewId]);
+
+        return $response->withHeader('Location', "/businesses/" . $info['business_id'])->withStatus(302);
     }
 
     public function listBusinessReviews(Request $request, Response $response, array $args): Response

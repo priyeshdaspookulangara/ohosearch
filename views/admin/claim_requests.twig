@@ -1,0 +1,50 @@
+{% extends "layout.twig" %}
+
+{% block title %}Claim Requests - Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Business Claim Requests</h1>
+
+    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-100 text-gray-600 text-sm">
+                    <th class="p-4">Business</th>
+                    <th class="p-4">Requester</th>
+                    <th class="p-4">Notes</th>
+                    <th class="p-4">Date</th>
+                    <th class="p-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in claims %}
+                <tr class="border-t">
+                    <td class="p-4">
+                        <div class="font-bold text-gray-900">{{ claim.business_name }}</div>
+                        <a href="/businesses/{{ claim.business_id }}" target="_blank" class="text-xs text-primary hover:underline">View Profile</a>
+                    </td>
+                    <td class="p-4">
+                        <div class="font-medium">{{ claim.user_name }}</div>
+                        <div class="text-xs text-gray-500">User ID: #{{ claim.user_id }}</div>
+                    </td>
+                    <td class="p-4 text-sm text-gray-600">{{ claim.notes ?: 'No notes provided' }}</td>
+                    <td class="p-4 text-sm text-gray-500">{{ claim.created_at|date("M d, Y") }}</td>
+                    <td class="p-4 text-right">
+                        <form action="/admin/claims/{{ claim.id }}/approve" method="POST">
+                            <input type="hidden" name="{{ csrf.nameKey }}" value="{{ csrf.name }}">
+                            <input type="hidden" name="{{ csrf.valueKey }}" value="{{ csrf.value }}">
+                            <button type="submit" class="bg-green-600 text-white px-4 py-1 rounded text-sm font-bold hover:bg-green-700">Approve</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="p-12 text-center text-gray-400">No pending claim requests.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

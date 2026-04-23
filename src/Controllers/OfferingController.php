@@ -120,10 +120,16 @@ class OfferingController
 
     private function moveUploadedFile($directory, $uploadedFile)
     {
+        $extension = strtolower(pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+        if (!in_array($extension, $allowed)) {
+            throw new \Exception("Invalid file extension. Only images (jpg, png, webp, gif) are allowed.");
+        }
+
         if (!is_dir($directory)) {
             mkdir($directory, 0777, true);
         }
-        $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
         $basename = bin2hex(random_bytes(8));
         $filename = sprintf('%s.%0.8s', $basename, $extension);
         $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);

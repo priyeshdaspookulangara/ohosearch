@@ -201,6 +201,18 @@ CREATE TABLE IF NOT EXISTS support_tickets (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Claim Requests
+CREATE TABLE IF NOT EXISTS claim_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    business_id INT,
+    user_id INT,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- Notifications
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,

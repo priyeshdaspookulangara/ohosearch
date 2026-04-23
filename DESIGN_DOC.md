@@ -7,6 +7,7 @@ erDiagram
     USERS ||--o{ BUSINESSES : owns
     USERS ||--o{ REVIEWS : writes
     USERS ||--o{ FAVORITES : has
+    USERS ||--o{ CLAIM_REQUESTS : makes
     USERS ||--o{ COUPON_REQUESTS : makes
     USERS ||--o{ PAYMENTS : makes
     USERS ||--o{ SUPPORT_TICKETS : raises
@@ -20,6 +21,7 @@ erDiagram
     BUSINESSES ||--o{ ACHIEVEMENTS : showcases
     BUSINESSES ||--o{ OFFERINGS : provides
     BUSINESSES ||--o{ REVIEWS : receives
+    BUSINESSES ||--o{ CLAIM_REQUESTS : targets
     BUSINESSES ||--o{ FAVORITES : bookmarked-in
     BUSINESSES ||--o{ ENQUIRIES : receives
     BUSINESSES ||--o{ FEATURED_LISTINGS : featured-as
@@ -65,6 +67,26 @@ sequenceDiagram
     DB-->>C: Coupon Applied (Discounted Amount)
 ```
 
+### 🤝 Business Claiming Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User (Contributor)
+    participant A as Admin
+    participant DB as Database
+
+    U->>DB: Submit Claim Request (Business ID, Proof/Reason)
+    A->>DB: List Pending Claim Requests
+    A->>A: Verify Request
+    alt Approved
+        A->>DB: Update Business (Set owner_id = requester_id)
+        A->>DB: Update Claim Status (Approved)
+        DB-->>U: You now own this business!
+    else Rejected
+        A->>DB: Update Claim Status (Rejected)
+    end
+```
+
 ### 💰 Payment & Featured Activation
 
 ```mermaid
@@ -104,6 +126,8 @@ sequenceDiagram
 - `POST /api/businesses/{id}/enquiry`: Send message to business.
 - `POST /api/businesses/{id}/favorite`: Toggle favorite status.
 - `POST /api/businesses/{id}/review`: Submit rating and review.
+- `POST /api/reviews/{id}/reply`: Reply to a review (Owner only).
+- `POST /api/businesses/{id}/claim`: Submit a claim request.
 
 ### 🛠️ Support Service
 - `POST /api/support/tickets`: Create a help ticket.
